@@ -1,0 +1,60 @@
+constraints:
+- id: CRANE_CHECK
+  rule: 评估是否需要吊车/拆窗
+  severity: mandatory
+- id: PRO_TEAM
+  rule: 推荐专业钢琴搬运团队（4人以上）
+  severity: mandatory
+exceptions: []
+output:
+  must_include:
+  - 吊装评估
+  - 专业团队建议
+  optional: []
+preconditions:
+  required_fields: []
+  required_tools:
+  - lalamove_estimate
+short_description:
+  display_name: 大件吊装
+  required_tools:
+  - lalamove_estimate
+  summary: 处理钢琴、保险柜等需吊装/专业搬运场景
+  trigger_examples:
+  - 家里有一架三角钢琴
+  - 沙发电梯进不去怎么办
+  trigger_keywords:
+  - 钢琴
+  - 保险柜
+  - 吊装
+  - 大件
+  - 搬不上楼
+  - 电梯进不去
+skill_id: heavy_lifting
+skill_name: 大件吊装
+test_cases:
+- expected_skill_activation: true
+  input: 家里有一架三角钢琴要搬
+tools:
+- mandatory_params:
+  - from_addr
+  - to_addr
+  - total_volume
+  notes: 大件附加费
+  params_template:
+    has_large_item: true
+  tool_name: lalamove_estimate
+trigger:
+  embedding_threshold: 0.65
+  keywords:
+  - 钢琴
+  - 保险柜
+  - 吊装
+  - 大件
+  - 搬不上楼
+  - 电梯进不去
+  negative_examples: []
+  trigger_examples:
+  - 家里有一架三角钢琴
+  - 保险柜怎么搬上6楼
+version: 1.0.0

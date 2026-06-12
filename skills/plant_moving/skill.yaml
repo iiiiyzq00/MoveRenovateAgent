@@ -1,0 +1,70 @@
+skill_id: "plant_moving"
+skill_name: "绿植搬运"
+version: "1.0.0"
+
+short_description:
+  display_name: "绿植搬运"
+  summary: "处理盆栽、大型绿植、多肉等植物搬家场景：控水、保湿、防折、防冻"
+  trigger_keywords: ["绿植", "植物", "盆栽", "多肉", "大树", "花盆", "花草", "花园", "阳台植物"]
+  trigger_examples: ["家里有很多绿植怎么搬", "盆栽搬家要注意什么", "大型植物怎么运输"]
+  required_tools: []
+
+trigger:
+  keywords: ["绿植", "植物", "盆栽", "多肉", "大树", "花盆", "花草", "花园植物", "阳台植物", "发财树", "绿萝"]
+  embedding_threshold: 0.65
+  trigger_examples: ["家里有很多绿植怎么搬", "盆栽搬家要注意什么", "大型植物怎么运输"]
+  negative_examples: []
+
+preconditions:
+  required_fields: []
+  required_tools: []
+
+tools:
+  - tool_name: "lalamove_estimate"
+    params_template:
+      has_plants: true
+      temperature_controlled: true
+    notes: "绿植运输建议选择恒温车厢"
+    mandatory_params: []
+
+constraints:
+  - id: "PLANT_WATER_CONTROL"
+    rule: "大型绿植搬家前3-5天停止浇水，保持盆土偏干（减轻重量+减少运输颠簸导致的盆土溢出）"
+    severity: "mandatory"
+  - id: "PLANT_ROOT_PROTECT"
+    rule: "盆土表面用湿报纸或保鲜膜覆盖保湿，根部用气泡膜包裹花盆防止破裂"
+    severity: "mandatory"
+  - id: "PLANT_CANOPY_PROTECT"
+    rule: "大型绿植（高度>1m）用塑料膜或防尘布包裹树冠，避免枝叶折断；用绳子将枝条收拢固定"
+    severity: "mandatory"
+  - id: "PLANT_SUN_PROTECT"
+    rule: "夏季搬运避免阳光直射（车内用遮阳帘），冬季搬运车内温度≥5°C防止冻伤"
+    severity: "warning"
+  - id: "PLANT_SUCCULENT"
+    rule: "多肉植物和仙人掌类需单独用小纸箱固定，箱内用软纸填充空隙，标注'易碎·向上'"
+    severity: "conditional"
+  - id: "PLANT_QUARANTINE"
+    rule: "跨城搬家需确认目的地是否有植物检疫要求（部分城市禁止外来土壤进入）"
+    severity: "conditional"
+  - id: "PLANT_PRIORITY"
+    rule: "绿植建议最后装车、最先卸车，减少在车厢内停留时间"
+    severity: "warning"
+
+output:
+  must_include:
+    - "绿植打包清单（控水时间表、包装材料）"
+    - "温控提醒（夏季防晒/冬季防冻）"
+    - "装车顺序建议（最后装最先卸）"
+  optional:
+    - "难搬运植物的临时寄养建议"
+    - "新家植物摆放风水建议"
+
+exceptions:
+  - condition: "用户有大量大型绿植（>10盆）"
+    fallback: "建议用户考虑联系专业园艺搬运公司或使用植物专用运输车"
+
+test_cases:
+  - input: "家里有很多盆栽绿植，搬家要注意什么"
+    expected_skill_activation: true
+  - input: "阳台上的花草怎么搬"
+    expected_skill_activation: true

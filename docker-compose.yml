@@ -1,0 +1,124 @@
+# ═══════════════════════════════════════════════════════════
+# MoveRenovateAgent — Docker Compose 完整编排
+#
+# 一键启动:  docker compose up -d
+# 前端:      http://localhost:3000
+# 后端 API:  http://localhost:8000
+# ═══════════════════════════════════════════════════════════
+
+version: "3.9"
+
+services:
+  # ── 前端 (Vue 3 + Vite) ──────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mra_frontend
+    ports:
+      - "3001:3000"
+    environment:
+      - VITE_API_BASE_URL=http://api:8000
+    depends_on:
+      - api
+    restart: unless-stopped
+
+  # ── API 服务 ─────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mra_api
+    ports:
+      - "8000:8000"
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      chromadb:
+        condition: service_started
+    restart: unless-stopped
+    volumes:
+      - ./skills:/app/skills:ro
+
+  # ── 知识库初始化（一次性） ──────────────────────────
+  init_kb:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mra_init_kb
+    command: python scripts/load_knowledge.py --reset
+    environment:
+      - CHROMADB_HOST=chromadb
+      - CHROMADB_PORT=8000
+    env_file:
+      - .env
+    depends_on:
+      chromadb:
+        condition: service_started
+    restart: "no"
+
+  # ── PostgreSQL 16 + pgvector ─────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: mra_postgres
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: mra
+      POSTGRES_PASSWORD: mra_secret
+      POSTGRES_DB: move_renovate
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/01_init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mra -d move_renovate"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── Redis 7 ─────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: mra_redis
+    ports:
+      - "6380:6379"
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy volatile-lru
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # ── ChromaDB ────────────────────────────────────────
+  chromadb:
+    image: chromadb/chroma:latest
+    container_name: mra_chromadb
+    ports:
+      - "8001:8000"
+    environment:
+      - IS_PERSISTENT=TRUE
+      - PERSIST_DIRECTORY=/chroma/chroma
+      - ANONYMIZED_TELEMETRY=FALSE
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  chroma_data:

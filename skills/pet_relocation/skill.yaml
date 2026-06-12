@@ -1,0 +1,93 @@
+constraints:
+- id: PET_CAGE_REQUIRED
+  rule: 必须提醒用户自备航空箱/宠物笼
+  severity: mandatory
+- id: PET_SHORT_ROUTE
+  rule: 优先选择路程最短路线
+  severity: warning
+- id: PET_TEMP_LIMIT
+  rule: 高温/低温天气追加提醒
+  severity: warning
+exceptions:
+- condition: lalamove_estimate 超时
+  fallback: 使用默认参数做区间估算
+output:
+  must_include:
+  - 车型推荐
+  - 运费区间
+  - 路线建议
+  - 打包清单
+  optional:
+  - 沿途宠物医院
+preconditions:
+  required_fields:
+  - from_address
+  - to_address
+  required_tools:
+  - amap_direction
+  - lalamove_estimate
+short_description:
+  display_name: 宠物搬运
+  required_tools:
+  - lalamove_estimate
+  - amap_direction
+  summary: 处理猫、狗、鱼缸等宠物搬家场景，推荐宠物友好车型、短路线
+  trigger_examples:
+  - 我家有一只猫
+  - 带狗搬家
+  - 鱼缸怎么搬
+  trigger_keywords:
+  - 猫
+  - 狗
+  - 宠物
+  - 鱼缸
+  - 鹦鹉
+  - 仓鼠
+  - 兔子
+  - 爬宠
+  - 毛孩子
+skill_id: pet_relocation
+skill_name: 宠物搬运
+test_cases:
+- expected_skill_activation: true
+  input: 我从朝阳搬到通州，有一只3kg的猫
+- expected_skill_activation: true
+  input: 跨城搬家，有一只金毛
+tools:
+- mandatory_params:
+  - from_addr
+  - to_addr
+  - total_volume
+  notes: 优先选择带空调隔舱的车型
+  params_template:
+    has_pet: true
+    vehicle_type: pet_friendly
+  tool_name: lalamove_estimate
+- mandatory_params:
+  - origin
+  - destination
+  notes: 优先短路线减少宠物应激
+  params_template:
+    strategy: shortest_time
+  tool_name: amap_direction
+trigger:
+  embedding_threshold: 0.65
+  keywords:
+  - 猫
+  - 狗
+  - 宠物
+  - 鱼缸
+  - 鹦鹉
+  - 仓鼠
+  - 兔子
+  - 爬宠
+  - 毛孩子
+  - 主子
+  negative_examples:
+  - 我属狗
+  - 猫王音箱
+  trigger_examples:
+  - 我家有一只猫
+  - 带狗搬家需要准备什么
+  - 鱼缸怎么搬
+version: 1.2.0

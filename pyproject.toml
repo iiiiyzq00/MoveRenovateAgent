@@ -1,0 +1,15 @@
+[project]
+name = "moverenovateagent"
+version = "0.1.0"
+description = "智能搬装规划 Agent"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests/"]
+markers = [
+    "unit: 单元测试（无需外部依赖）",
+    "integration: 集成测试（需要真实 LLM / MCP 服务）",
+    "e2e: 端到端测试（需要完整环境）",
+    "slow: 耗时 >1s 的测试",
+]

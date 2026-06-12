@@ -1,0 +1,68 @@
+skill_id: "elderly_accessible"
+skill_name: "适老化改造"
+version: "1.0.0"
+
+short_description:
+  display_name: "适老化改造"
+  summary: "面向有老人家庭的适老化装修方案：无障碍通道、防滑地面、扶手安装、紧急呼叫"
+  trigger_keywords: ["老人", "适老", "无障碍", "扶手", "防滑", "轮椅", "护理床", "父母年纪大", "腿脚不便", "年迈"]
+  trigger_examples: ["家里有老人要注意什么", "适老化改造", "老人房装修"]
+  required_tools: []
+
+trigger:
+  keywords: ["老人", "适老", "无障碍", "扶手", "防滑", "轮椅", "护理床", "父母年纪大", "腿脚不便", "年迈", "老年人"]
+  embedding_threshold: 0.65
+  trigger_examples: ["家里有老人要注意什么", "适老化改造需要做哪些", "老人房怎么装修"]
+  negative_examples: []
+
+preconditions:
+  required_fields: []
+  required_tools: []
+
+tools:
+  - tool_name: "renovation_space_planning"
+    params_template:
+      wheelchair_accessible: true
+      grab_bar_required: true
+    notes: "适老改造需要调整空间规划参数"
+    mandatory_params: []
+
+constraints:
+  - id: "WHEELCHAIR_SPACE"
+    rule: "卫生间必须预留轮椅回转空间（直径≥1500mm），淋浴区尺寸≥900×900mm"
+    severity: "mandatory"
+  - id: "FLOOR_ANTI_SLIP"
+    rule: "卫生间、厨房地面防滑等级≥R10，建议使用防滑地砖或防滑涂料"
+    severity: "mandatory"
+  - id: "CORRIDOR_WIDTH"
+    rule: "过道宽度≥900mm（轮椅通行），门口宽度≥800mm，取消门槛高差"
+    severity: "mandatory"
+  - id: "GRAB_BAR"
+    rule: "卫生间马桶旁和淋浴区必须安装扶手（直径32-38mm，承重≥100kg），高度距地700-800mm"
+    severity: "mandatory"
+  - id: "EMERGENCY_CALL"
+    rule: "卧室床头和卫生间各安装一个紧急呼叫按钮（连接客厅或手机）"
+    severity: "warning"
+  - id: "LIGHTING"
+    rule: "过道和卫生间建议安装感应夜灯，避免老人夜间摸黑"
+    severity: "conditional"
+  - id: "BED_HEIGHT"
+    rule: "床高度建议450-500mm（与轮椅座高平齐），便于老人起身和转移"
+    severity: "conditional"
+
+output:
+  must_include:
+    - "适老化改造清单（无障碍通道、扶手位置、防滑地面）"
+    - "安全提醒（防滑、紧急呼叫、照明）"
+    - "施工注意事项（不拆承重墙、门槛处理）"
+  optional:
+    - "适老品牌推荐"
+    - "政府适老化改造补贴政策参考"
+
+exceptions: []
+
+test_cases:
+  - input: "家里有老人，装修要注意什么"
+    expected_skill_activation: true
+  - input: "要做适老化改造，老人腿脚不便"
+    expected_skill_activation: true
